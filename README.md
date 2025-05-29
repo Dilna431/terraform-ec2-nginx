@@ -32,7 +32,7 @@ terraform apply
 4️⃣ **Output the public IP**
 Terraform will output the public IP of the instance. Access it via `http://<public-ip>`.
 
-## 🗑️ Destroy the deployment
+## Destroy the deployment
 
 ```bash
 terraform destroy
