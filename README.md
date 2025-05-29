@@ -9,6 +9,91 @@ This project provisions an AWS EC2 instance running , installs Nginx, and serves
 * AWS CLI installed (optional)
 * Existing AWS key pair (optional if you plan to SSH)
 
+## Expected File Structure  
+
+├── main.tf  
+├── variables.tf  
+├── outputs.tf  
+├── README.md  
+
+## main.tf
+provider "aws" {  
+  region = "us-east-1" # Change to your desired AWS region  
+}  
+
+resource "aws_instance" "nginx_server" {  
+  ami                    = "ami-042e8287309f5df03" # Ubuntu 20.04 LTS in us-east-1  
+  instance_type          = var.instance_type  
+  key_name               = var.key_name           # Optional: Provide your existing key pair name  
+  vpc_security_group_ids = [aws_security_group.nginx_sg.id]  
+
+  user_data =  
+              #!/bin/bash  
+              sudo apt update  
+              sudo apt install -y nginx  
+              echo "Welcome to the Terraform-managed Nginx Server on Ubuntu" | sudo tee /var/www/html/index.html    
+              sudo systemctl enable nginx   
+              sudo systemctl start nginx    
+                
+
+  tags = {  
+    Name = "TerraformNginxServer"   
+  }  
+}  
+
+resource "aws_security_group" "nginx_sg" {  
+  name        = "nginx_sg"  
+  description = "Allow HTTP and SSH access"  
+  vpc_id      = data.aws_vpc.default.id  
+
+  ingress {  
+    description = "HTTP"   
+    from_port   = 80  
+    to_port     = 80  
+    protocol    = "tcp"  
+    cidr_blocks = ["0.0.0.0/0"]  
+  }  
+
+  ingress {  
+    description = "SSH"  
+    from_port   = 22  
+    to_port     = 22  
+    protocol    = "tcp"  
+    cidr_blocks = ["0.0.0.0/0"]  
+  }  
+
+  egress {  
+    from_port   = 0  
+    to_port     = 0  
+    protocol    = "-1"  
+    cidr_blocks = ["0.0.0.0/0"]  
+  }  
+}  
+
+data "aws_vpc" "default" {  
+  default = true  
+}  
+
+## Variables.tf  
+
+variable "instance_type" {  
+  description = "EC2 instance type"  
+  default     = "t2.micro"  
+}  
+
+variable "key_name" {  
+  description = "EC2 key pair name"  
+  default     = "" # Leave empty if you don't want to SSH  
+}  
+
+## Output.tf  
+
+output "instance_public_ip" {  
+  description = "Public IP of the EC2 instance"  
+  value       = aws_instance.nginx_server.public_ip  
+}  
+
+
 ## Steps to Deploy
 
 1️⃣ **Initialize Terraform**
@@ -61,10 +146,6 @@ terraform destroy
 
 
 
-## Notes
-
-* Default AMI ID used: `ami-042e8287309f5df03` (Ubuntu 20.04 LTS in `us-east-1`). Replace with your region’s AMI if needed.
-* No VPC/subnet/IGW created—uses default AWS resources.
 
 
 
