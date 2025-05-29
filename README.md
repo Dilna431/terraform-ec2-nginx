@@ -16,6 +16,16 @@ This project provisions an AWS EC2 instance running , installs Nginx, and serves
 ├── outputs.tf  
 ├── README.md  
 
+## Implementation Details  
+
+## Infrastructure as Code (Terraform) 
+
+The Terraform configuration is organized into multiple files for better maintainability:
+
+main.tf : Defines the AWS provider and data sources for VPC and subnets  
+variables.tf: Declares all variables used in the configuration  
+outputs.tf: Defines output values such as instance IPs and URLs  
+
 ## main.tf
 provider "aws" {  
   region = "us-east-1" # Change to your desired AWS region  
